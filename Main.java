@@ -1,8 +1,11 @@
 package com.ot.executor;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class Main {
@@ -62,15 +65,41 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         TaskGroup taskGroup = new TaskGroup(UUID.randomUUID());
-        CallableService cs = new CallableService("Task");
+        CallableService<Result> cs1 = new CallableService<>("Task1");
+        CallableService<Result> cs2 = new CallableService<>("Task2");
+        CallableService<Result> cs3 = new CallableService<>("Task3");
 
-        Task task1 = new Task(taskGroup.groupUUID(),taskGroup,TaskType.READ,cs);
+        Task task1 = new Task(taskGroup.groupUUID(),taskGroup,TaskType.READ,cs1);
+        Task task2 = new Task(taskGroup.groupUUID(),taskGroup,TaskType.READ,cs2);
+        Task task3 = new Task(taskGroup.groupUUID(),taskGroup,TaskType.READ,cs3);
+
         TaskServiceImp taskServiceImp = new TaskServiceImp(taskGroup);
-        Future ss =taskServiceImp.submitTask(task1);
+        List<Task> list = new ArrayList<>(List.of(task1,task2,task3));
 
+        List<Future<?>> futures = new ArrayList<>();
+
+        list.stream().forEach(task -> {
+            Future<Result> result =taskServiceImp.submitTask(task);
+            futures.add(result);
+        });
+
+        for (Future<?> future : futures) {
+            System.out.println("Task Result::"+future.get());
+        }
+
+
+       /* list.parallelStream().forEach(task -> {
+            Future<Result> result =taskServiceImp.submitTask(task);
+            try {
+                System.out.println("Result:: "+result.get());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        });*/
     }
-
 }
