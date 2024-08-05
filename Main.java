@@ -89,17 +89,5 @@ public class Main {
         for (Future<?> future : futures) {
             System.out.println("Task Result::"+future.get());
         }
-
-
-       /* list.parallelStream().forEach(task -> {
-            Future<Result> result =taskServiceImp.submitTask(task);
-            try {
-                System.out.println("Result:: "+result.get());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        });*/
     }
 }
